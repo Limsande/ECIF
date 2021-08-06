@@ -1,0 +1,12 @@
+name: ecif
+channels:
+  - defaults
+  - anaconda
+  - conda-forge
+dependencies:
+  - rdkit
+  - jupyter
+  - scipy
+  - numpy
+  - pandas
+  - scikit-learn
