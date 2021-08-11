@@ -3,10 +3,9 @@
 
 # In[1]:
 
+import os
 
-import numpy as np
 import pandas as pd
-from os import listdir
 from rdkit import Chem
 from scipy.spatial.distance import cdist
 from itertools import product
@@ -161,8 +160,11 @@ def LoadSDFasDF(SDF):
 
 # In[7]:
 
+# Make sure we find the atom keys csv file even if we're loaded as library.
+script_dir = os.path.abspath(os.path.dirname(__file__))
+Atom_Keys_path = os.path.join(script_dir, "PDB_Atom_Keys.csv")
+Atom_Keys = pd.read_csv(Atom_Keys_path, sep=",")
 
-Atom_Keys=pd.read_csv("PDB_Atom_Keys.csv", sep=",")
 def LoadPDBasDF(PDB):
 # This function takes a PDB for a protein as input and returns it as a pandas DataFrame with its atom types labeled according to ECIF
 
