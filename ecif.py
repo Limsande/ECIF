@@ -6,11 +6,36 @@
 import os
 
 import pandas as pd
+from pandas import DataFrame
 from rdkit import Chem
 from scipy.spatial.distance import cdist
 from itertools import product
 from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
 
+
+def get_ecif_ld_for_single_complex(complx_name: str, receptor_file: str, ligand_file: str, cutoff: float) -> DataFrame:
+    """
+    Computes ECIF and ligand descriptors for given receptor-ligand complex.
+    :param complx_name: Name of receptor-ligand complex, e.g. 1Q11
+    :type complx_name: str
+    :param receptor_file: Receptor file in PDB format
+    :type receptor_file: str
+    :param ligand_file: Ligand file in SDF format
+    :type ligand_file: str
+    :param cutoff: Distance cutoff for ECIF calculation
+    :type cutoff: float
+    :return: a pandas DataFrame containing the ECIF::LD descriptor with ECIF
+        atom pairs and ligand descriptors as columns
+    :rtype: pandas.DataFrame
+    """
+    # Compute descriptors
+    ecif = [GetECIF(receptor_file, ligand_file, distance_cutoff=cutoff)]
+    # Ignore warnings regarding valence errors
+    ld = [GetRDKitDescriptors(ligand_file)]
+
+    # Merge ECIF with ligand descriptors
+    ecif_ld = DataFrame(ecif, columns=PossibleECIF).join(DataFrame(ld, columns=LigandDescriptors))
+    return DataFrame({'PDB': [complx_name]}).join(ecif_ld)
 
 # ### Loading useful data
 
