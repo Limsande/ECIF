@@ -13,29 +13,38 @@ from itertools import product
 from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
 
 
-def get_ecif_ld_for_single_complex(complx_name: str, receptor_file: str, ligand_file: str, cutoff: float) -> DataFrame:
+def get_ecif_ld(receptor_files: [str], ligand_files: [str], cutoff: float) -> DataFrame:
     """
-    Computes ECIF and ligand descriptors for given receptor-ligand complex.
-    :param complx_name: Name of receptor-ligand complex, e.g. 1Q11
-    :type complx_name: str
-    :param receptor_file: Receptor file in PDB format
-    :type receptor_file: str
-    :param ligand_file: Ligand file in SDF format
-    :type ligand_file: str
+    Computes ECIF and ligand descriptors for given receptor-ligand complexes.
+    :param receptor_files: Receptor files in PDB format
+    :type receptor_files: str or list of str
+    :param ligand_files: Ligand files in SDF format
+    :type ligand_files: str or list of str
     :param cutoff: Distance cutoff for ECIF calculation
     :type cutoff: float
-    :return: a pandas DataFrame containing the ECIF::LD descriptor with ECIF
+    :return: a pandas DataFrame containing the ECIF::LD descriptors with ECIF
         atom pairs and ligand descriptors as columns
     :rtype: pandas.DataFrame
+    :raises ValueError: if numbers of receptor and ligand files do not match and number of receptors >1
     """
+    if not isinstance(receptor_files, list):
+        receptor_files = [receptor_files]
+    if not isinstance(ligand_files, list):
+        ligand_files = [ligand_files]
+
+    if len(receptor_files) != len(ligand_files):
+        if len(receptor_files) == 1:
+            receptor_files = receptor_files * len(ligand_files)
+        else:
+            raise ValueError(f'Numbers of receptors and ligands do not match: {len(receptor_files)} vs. {len(ligand_files)}')
+
     # Compute descriptors
-    ecif = [GetECIF(receptor_file, ligand_file, distance_cutoff=cutoff)]
+    ecif = [GetECIF(recep, lig, distance_cutoff=cutoff) for recep, lig in zip(receptor_files, ligand_files)]
     # Ignore warnings regarding valence errors
-    ld = [GetRDKitDescriptors(ligand_file)]
+    ld = [GetRDKitDescriptors(lig) for lig in ligand_files]
 
     # Merge ECIF with ligand descriptors
-    ecif_ld = DataFrame(ecif, columns=PossibleECIF).join(DataFrame(ld, columns=LigandDescriptors))
-    return DataFrame({'PDB': [complx_name]}).join(ecif_ld)
+    return DataFrame(ecif, columns=PossibleECIF).join(DataFrame(ld, columns=LigandDescriptors))
 
 # ### Loading useful data
 
