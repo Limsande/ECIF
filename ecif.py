@@ -187,8 +187,11 @@ def LoadSDFasDF(SDF):
 
     df = pd.DataFrame(ECIF_atoms)
     df.columns = ["ATOM_INDEX", "ECIF_ATOM_TYPE","X","Y","Z"]
-    if len(set(df["ECIF_ATOM_TYPE"]) - set(ECIF_LigandAtoms)) > 0:
-        print("WARNING: Ligand contains unsupported atom types. Only supported atom-type pairs are counted.")
+    encountered_unsupported_types = set(df["ECIF_ATOM_TYPE"]) - set(ECIF_LigandAtoms)
+    if len(encountered_unsupported_types) > 0:
+        print(f"WARNING: Ligand {SDF} contains unsupported atom types. Only supported atom-type pairs are counted."
+              f"Found these unsupported types:")
+        print(encountered_unsupported_types)
     return(df)
 
 
