@@ -26,6 +26,7 @@ def get_ecif_ld(receptor_files: [str], ligand_files: [str], cutoff: float) -> Da
         atom pairs and ligand descriptors as columns
     :rtype: pandas.DataFrame
     :raises ValueError: if numbers of receptor and ligand files do not match and number of receptors >1
+    :raises FileNotFoundError: if any of the files does not exist
     """
     if not isinstance(receptor_files, list):
         receptor_files = [receptor_files]
@@ -37,6 +38,10 @@ def get_ecif_ld(receptor_files: [str], ligand_files: [str], cutoff: float) -> Da
             receptor_files = receptor_files * len(ligand_files)
         else:
             raise ValueError(f'Numbers of receptors and ligands do not match: {len(receptor_files)} vs. {len(ligand_files)}')
+
+    for f in receptor_files + ligand_files:
+        if not os.path.isfile(f):
+            raise FileNotFoundError(f'File does not exist: {f}')
 
     # Compute descriptors
     ecif = [GetECIF(recep, lig, distance_cutoff=cutoff) for recep, lig in zip(receptor_files, ligand_files)]
